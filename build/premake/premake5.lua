@@ -35,7 +35,7 @@ local function createConsoleProject(targetDirPath, targetName)
      links({LibWindows})
 end
 
-workspace("physics-game-prog")
+workspace("physics-game-prg")
 
    location("../" .. _ACTION)
 
