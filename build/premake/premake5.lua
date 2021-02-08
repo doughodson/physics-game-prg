@@ -15,24 +15,20 @@ end
 --
 COMMON_IncPath      = "../../"
 
-local function createConsoleProject(targetDirPath, targetName)
-   project (targetName)
+local function createConsoleProject(project)
+   project (project)
      kind("ConsoleApp")
      defines({"_CONSOLE"})
      location("../" .. _ACTION .. "/projects/%{prj.name}")
-     targetname(targetName)
-     targetdir("../../" .. targetDirPath)
+     targetname(project)
+     targetdir("../../" .. project)
      includedirs({COMMON_IncPath})
-     debugdir("../../" .. targetDirPath)
+     debugdir("../../" .. project)
      files({
-        "../../" .. targetDirPath .. "/**.h*",
-        "../../" .. targetDirPath .. "/**.c*"
+        "../../" .. project .. "/**.h*",
+        "../../" .. project .. "/**.c*"
      })
-     excludes({
-        "../../" .. targetDirPath .. "/winmain.c*",
-        "../../" .. targetDirPath .. "/d3d*.*"
-     })
-     links({LibWindows})
+     --links({LibWindows})
 end
 
 workspace("physics-game-prg")
@@ -72,7 +68,8 @@ workspace("physics-game-prg")
       targetsuffix("_d")
       defines { "WIN32", "_DEBUG" }
 
-   createConsoleProject("ch01-newtonian", "ch01-newtonian")
-   createConsoleProject("ch02-kinematics", "ch02-kinematics")
-   createConsoleProject("ch10-planes", "ch10-planes")
+   createConsoleProject("ch03-newtonian")
+   createConsoleProject("ch04-kinematics")
+   createConsoleProject("ch10-planes")
+
 
