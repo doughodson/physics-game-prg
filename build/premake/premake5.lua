@@ -13,18 +13,7 @@ end
 --
 -- set include and library paths
 --
-DX7_IncPath         = "c:/apps/dx7-sdk/include"
-DX7_LibPath         = "c:/apps/dx7-sdk/lib"
-
 COMMON_IncPath      = "../../"
-GTEST_IncPath       = "../../gtest/include"
-LibPath             = "../../lib"
-
---
--- 3rd party library names
---
-LibDX7     = { "d3drm.lib", "ddraw.lib" }
-LibWindows = { "Winmm" }
 
 local function createConsoleProject(targetDirPath, targetName)
    project (targetName)
@@ -46,27 +35,7 @@ local function createConsoleProject(targetDirPath, targetName)
      links({LibWindows})
 end
 
-local function createMFCProject(targetDirPath, targetName)
-   project (targetName)
-     kind("WindowedApp")
-     location("../" .. _ACTION .. "/projects/%{prj.name}")
-     targetname(targetName)
-     includedirs({DX7_IncPath, COMMON_IncPath})
-     targetdir("../../" .. targetDirPath)
-     debugdir("../../" .. targetDirPath)
-     files({
-        "../../" .. targetDirPath .. "/**.h*",
-        "../../" .. targetDirPath .. "/**.c*",
-        "../../" .. targetDirPath .. "/**.rc"
-     })
-     excludes({
-        "../../" .. targetDirPath .. "/main.c*"
-     })
-     libdirs({ DX7_LibPath })
-     links({ LibDX7, LibWindows })
-end
-
-workspace("physics-game-dev")
+workspace("physics-game-prog")
 
    location("../" .. _ACTION)
 
@@ -103,43 +72,7 @@ workspace("physics-game-dev")
       targetsuffix("_d")
       defines { "WIN32", "_DEBUG" }
 
-   project "common"
-      kind("None")
-      language("C++")
-      location("../" .. _ACTION .. "/projects/%{prj.name}")
-      targetname "common"
-      files {
-         "../../common/**.h*",
-         "../../common/**.c*"
-      }
-
-   project "gtest"
-      kind("StaticLib")
-      language("C++")
-      location("../" .. _ACTION .. "/projects/%{prj.name}")
-      targetname "gtest"
-      targetdir(LibPath)
-      includedirs({GTEST_IncPath, "../../gtest"})
-      files {
-         "../../gtest/**.h*",
-         "../../gtest/**.c*"
-      }
-
-   createConsoleProject("ch01-basic-concepts", "ch01-basic-concepts")
-
-   createConsoleProject("ch02-cannon", "ch02-cannon")
-   createMFCProject("ch02-cannon", "ch02-cannon_mfc")
-
-   createMFCProject("ch02-particle-explosion", "ch02-particle-explosion")
-   createMFCProject("ch04-cannon2", "ch04-cannon2")
-   createMFCProject("ch06-cannon3", "ch06-cannon3")
-   createMFCProject("ch08-falling-particles", "ch08-falling-particles")
-   createMFCProject("ch09-rigid-body-2D", "ch09-rigid-body-2D")
-   createMFCProject("ch13-cloth-sim", "ch13-cloth-sim")
-   createMFCProject("ch17-hover", "ch17-hover")
-
-   createConsoleProject("chXX-volume", "chXX-volume")
-
-   createMFCProject("ch15-flight-sim", "ch15-flight-sim_dx7")
-   createConsoleProject("ch15-flight-sim", "ch15-flight-sim")
+   createConsoleProject("ch01-newtonian", "ch01-newtonian")
+   createConsoleProject("ch02-kinematics", "ch02-kinematics")
+   createConsoleProject("ch10-planes", "ch10-planes")
 
