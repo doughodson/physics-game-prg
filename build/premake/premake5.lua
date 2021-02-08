@@ -15,20 +15,19 @@ end
 --
 COMMON_IncPath      = "../../"
 
-local function createConsoleProject(project)
-   project (project)
+local function createConsoleProject(projectName)
+   project (projectName)
      kind("ConsoleApp")
      defines({"_CONSOLE"})
      location("../" .. _ACTION .. "/projects/%{prj.name}")
-     targetname(project)
-     targetdir("../../" .. project)
+     targetname(projectName)
+     targetdir("../../" .. projectName)
      includedirs({COMMON_IncPath})
-     debugdir("../../" .. project)
+     debugdir("../../" .. projectName)
      files({
-        "../../" .. project .. "/**.h*",
-        "../../" .. project .. "/**.c*"
+        "../../" .. projectName .. "/**.h*",
+        "../../" .. projectName .. "/**.c*"
      })
-     --links({LibWindows})
 end
 
 workspace("physics-game-prg")
@@ -68,8 +67,12 @@ workspace("physics-game-prg")
       targetsuffix("_d")
       defines { "WIN32", "_DEBUG" }
 
-   createConsoleProject("ch03-newtonian")
    createConsoleProject("ch04-kinematics")
+   createConsoleProject("ch08-cars")
+   createConsoleProject("ch09-boats")
    createConsoleProject("ch10-planes")
+   createConsoleProject("ch11-rockets")
+   createConsoleProject("ch12-solids")
+   createConsoleProject("ch14-lasers")
 
 
