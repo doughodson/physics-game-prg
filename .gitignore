@@ -1,0 +1,20 @@
+
+
+# misc visual studio files
+*.pdb
+*.ilk
+*.aps
+
+.vscode/
+
+.vs/
+.vscode/
+build/vs2019/
+build/gmake/
+*.[oa]
+
+*.exe
+*.lib
+
+!premake*.*
+
