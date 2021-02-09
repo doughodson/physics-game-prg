@@ -30,7 +30,7 @@ public class FlightSimulator extends JFrame implements ActionListener
   private JSlider alphaSlider;
   private JSlider bankSlider;
 
-  private JComboBox flapComboBox;
+  private JComboBox<String> flapComboBox;
 
   private JPanel drawingPanel;
 
@@ -176,7 +176,7 @@ public class FlightSimulator extends JFrame implements ActionListener
 
     //  Create a JComboBox to choose the coordinate axes that 
     //  will be displayed.
-    flapComboBox = new JComboBox();
+    flapComboBox = new JComboBox<String>();
     flapComboBox.addItem("0");
     flapComboBox.addItem("20");
     flapComboBox.addItem("40");
