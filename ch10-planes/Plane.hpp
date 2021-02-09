@@ -2,17 +2,19 @@
 #ifndef __Plane_HPP__
 #define __Plane_HPP__
 
-//********************************************
-//  This structure defines the data required
-//  to model a plane.
-//********************************************
-typedef struct _Plane {
+//-----------------------------------------------------
+// Class: Plane
+// -- data that defines properties
+//-----------------------------------------------------
+class Plane
+{
+public:
    int numEqns;
    double s;
    double q[6];
 
    double bank;
-   double alpha;  //  angle of attack
+   double alpha;       //  angle of attack
    double throttle;
    double wingArea;
    double wingSpan;
@@ -30,8 +32,8 @@ typedef struct _Plane {
    double propDiameter;
    double a;           //  propeller efficiency coefficient
    double b;           //  propeller efficiency coefficient
-   char* flap;        //  flap deflection amount
-} Plane;
+   char* flap;         //  flap deflection amount
+};
 
 #endif
 
