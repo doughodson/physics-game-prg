@@ -5,138 +5,74 @@
 
 #include "Plane.hpp"
 
-//*************************************************************
-//  This method loads the right-hand sides for the plane ODEs
-//*************************************************************
-void planeRightHandSide(Plane* plane,
-   double* q, double* deltaQ, double ds,
-   double qScale, double* dq) {
-   //  q[0] = vx = dxdt
-   //  q[1] = x
-   //  q[2] = vy = dydt
-   //  q[3] = y
-   //  q[4] = vz = dzdt
-   //  q[5] = z
-   double newQ[6]; // intermediate dependent variable values.
+const double pi{std::acos(-1.0)};
+const double G{-9.81};
 
-   double bank;
-   double alpha;
-   double throttle;
-   double wingArea;
-   double wingSpan;
-   double tailArea;
-   double clSlope0;
-   double cl0;
-   double clSlope1;
-   double cl1;
-   double alphaClMax;
-   double cdp;
-   double eff;
-   double mass;
-   double enginePower;
-   double engineRps;
-   double propDiameter;
-   double a;
-   double b;
+//-----------------------------------------------------
+// loads the right-hand sides for the plane ODEs
+//-----------------------------------------------------
+void planeRightHandSide(Plane* plane, double* q, double* deltaQ, double ds, double qScale, double* dq)
+{
+   const double alpha{plane->alpha};
+   const double throttle{plane->throttle};
+   const double wingArea{plane->wingArea};
+   const double wingSpan{plane->wingSpan};
+   const double tailArea{plane->tailArea};
+   const double clSlope0{plane->clSlope0};
+   const double cl0{plane->cl0};
+   const double clSlope1{plane->clSlope1};
+   const double cl1{plane->cl1};
+   const double alphaClMax{plane->alphaClMax};
+   const double cdp{plane->cdp};
+   const double eff{plane->eff};
+   const double mass{plane->mass};
+   const double enginePower{plane->enginePower};
+   const double engineRps{plane->engineRps};
+   const double propDiameter{plane->propDiameter};
+   const double a{plane->a};
+   const double b{plane->b};
 
-   int i;
-   double pi = acos(-1.0);
-   double G = -9.81;
+   // convert bank angle from degrees to radians
+   // angle of attack is not converted because the
+   // Cl-alpha curve is defined in terms of degrees
+   const double bank{plane->bank * pi / 180.0};
 
-   double vx;
-   double vy;
-   double vz;
-   double x;
-   double y;
-   double z;
-   double vh;
-   double vtotal;
-   double temperature;
-   double grp;
-   double pressure;
-   double density;
-   double omega;
-   double factor;
-   double advanceRatio;
-   double thrust;
-   double cl;
-   double lift;
-   double aspectRatio;
-   double cd;
-   double drag;
-   double cosW;   //  bank angle
-   double sinW;   //  bank angle
-   double cosP;   //  climb angle
-   double sinP;   //  climb angle
-   double cosT;   //  heading angle
-   double sinT;   //  heading angle
-   double Fx;
-   double Fy;
-   double Fz;
-
-   bank = plane->bank;
-   alpha = plane->alpha;
-   throttle = plane->throttle;
-   wingArea = plane->wingArea;
-   wingSpan = plane->wingSpan;
-   tailArea = plane->tailArea;
-   clSlope0 = plane->clSlope0;
-   cl0 = plane->cl0;
-   clSlope1 = plane->clSlope1;
-   cl1 = plane->cl1;
-   alphaClMax = plane->alphaClMax;
-   cdp = plane->cdp;
-   eff = plane->eff;
-   mass = plane->mass;
-   enginePower = plane->enginePower;
-   engineRps = plane->engineRps;
-   propDiameter = plane->propDiameter;
-   a = plane->a;
-   b = plane->b;
-
-   //  Convert bank angle from degrees to radians
-   //  Angle of attack is not converted because the
-   //  Cl-alpha curve is defined in terms of degrees.
-   bank = bank * pi / 180.0;
-
-   //  Compute the intermediate values of the 
-   //  dependent variables.
-   for (i = 0; i < 6; ++i) {
+   // compute the intermediate values of the dependent variables
+   double newQ[6]{};
+   for (int i = 0; i < 6; ++i) {
       newQ[i] = q[i] + qScale * deltaQ[i];
    }
 
-   //  Assign convenenience variables to the intermediate 
-   //  values of the locations and velocities.
-   vx = newQ[0];
-   vy = newQ[2];
-   vz = newQ[4];
-   x = newQ[1];
-   y = newQ[3];
-   z = newQ[5];
-   vh = sqrt(vx * vx + vy * vy);
-   vtotal = sqrt(vx * vx + vy * vy + vz * vz);
+   // assign convenenience variables to the intermediate 
+   // values of the locations and velocities
+   const double vx{newQ[0]};
+   const double vy{newQ[2]};
+   const double vz{newQ[4]};
+   const double x{newQ[1]};
+   const double y{newQ[3]};
+   const double z {newQ[5]};
+   const double vh{std::sqrt(vx * vx + vy * vy)};
+   const double vtotal{std::sqrt(vx * vx + vy * vy + vz * vz)};
 
-   //  Compute the air density
-   temperature = 288.15 - 0.0065 * z;
-   grp = (1.0 - 0.0065 * z / 288.15);
-   pressure = 101325.0 * pow(grp, 5.25);
-   density = 0.00348 * pressure / temperature;
+   // air density
+   const double temperature{288.15 - 0.0065 * z};
+   const double grp{(1.0 - 0.0065 * z / 288.15)};
+   const double pressure{101325.0 * std::pow(grp, 5.25)};
+   const double density{0.00348 * pressure / temperature};
 
-   //  Compute power drop-off factor
-   omega = density / 1.225;
-   factor = (omega - 0.12) / 0.88;
+   // power drop-off factor
+   const double omega{density / 1.225};
+   const double factor{(omega - 0.12) / 0.88};
 
-   //  Compute thrust
-   advanceRatio = vtotal / (engineRps * propDiameter);
-   thrust = throttle * factor * enginePower *
-      (a + b * advanceRatio * advanceRatio) / (engineRps * propDiameter);
+   // compute thrust
+   const double advanceRatio{vtotal / (engineRps * propDiameter)};
+   const double thrust{throttle * factor * enginePower * (a + b * advanceRatio * advanceRatio) / (engineRps * propDiameter)};
 
-   //  Compute lift coefficient. The Cl curve is 
-   //  modeled using two straight lines.
+   // compute lift coefficient - the Cl curve is modeled using two straight lines
+   double cl{};
    if (alpha < alphaClMax) {
       cl = clSlope0 * alpha + cl0;
-   }
-   else {
+   } else {
       cl = clSlope1 * alpha + cl1;
    }
 
@@ -153,28 +89,30 @@ void planeRightHandSide(Plane* plane,
       cl += 0.25;
    }
 
-   //  Compute lift
-   lift = 0.5 * cl * density * vtotal * vtotal * wingArea;
+   // compute lift
+   const double lift{0.5 * cl * density * vtotal * vtotal * wingArea};
 
-   //  Compute drag coefficient
-   aspectRatio = wingSpan * wingSpan / wingArea;
-   cd = cdp + cl * cl / (pi * aspectRatio * eff);
+   // compute drag coefficient
+   const double aspectRatio{wingSpan * wingSpan / wingArea};
+   const double cd{cdp + cl * cl / (pi * aspectRatio * eff)};
 
-   //  Compute drag force
-   drag = 0.5 * cd * density * vtotal * vtotal * wingArea;
+   // compute drag force
+   const double drag{0.5 * cd * density * vtotal * vtotal * wingArea};
 
-   //  Define some shorthand convenience variables
-   //  for use with the rotation matrix.
-   //  Compute the sine and cosines of the climb angle,
-   //  bank angle, and heading angle;
-   cosW = std::cos(bank);
-   sinW = std::sin(bank);
+   // define some shorthand convenience variables for use with the rotation matrix
+   // compute the sine and cosines of the climb angle, bank angle, and heading angle
+   const double cosW{std::cos(bank)};
+   const double sinW{std::sin(bank)};
+
+   double cosP{};   //  climb angle
+   double sinP{};   //  climb angle
+   double cosT{};   //  heading angle
+   double sinT{};   //  heading angle
 
    if (vtotal == 0.0) {
       cosP = 1.0;
       sinP = 0.0;
-   }
-   else {
+   } else {
       cosP = vh / vtotal;
       sinP = vz / vtotal;
    }
@@ -182,32 +120,26 @@ void planeRightHandSide(Plane* plane,
    if (vh == 0.0) {
       cosT = 1.0;
       sinT = 0.0;
-   }
-   else {
+   } else {
       cosT = vx / vh;
       sinT = vy / vh;
    }
 
-   //  Convert the thrust, drag, and lift forces into
-   //  x-, y-, and z-components using the rotation matrix.
-   Fx = cosT * cosP * (thrust - drag) +
-      (sinT * sinW - cosT * sinP * cosW) * lift;
-   Fy = sinT * cosP * (thrust - drag) +
-      (-cosT * sinW - sinT * sinP * cosW) * lift;
-   Fz = sinP * (thrust - drag) + cosP * cosW * lift;
+   // convert the thrust, drag, and lift forces into x-, y-, and z-components using the rotation matrix
+   const double Fx{cosT * cosP * (thrust - drag) + (sinT * sinW - cosT * sinP * cosW) * lift};
+   const double Fy{sinT * cosP * (thrust - drag) + (-cosT * sinW - sinT * sinP * cosW) * lift};
+   double Fz{sinP * (thrust - drag) + cosP * cosW * lift};
 
-   //  Add the gravity force to the z-direction force.
+   // add the gravity force to the z-direction force.
    Fz = Fz + mass * G;
 
-   //  Since the plane can't sink into the ground, if the
-   //  altitude is less than or equal to zero and the z-component
-   //  of force is less than zero, set the z-force
-   //  to be zero.
+   // since the plane can't sink into the ground, if the altitude is less than or equal to zero and the z-component
+   // of force is less than zero, set the z-force to be zero
    if (z <= 0.0 && Fz <= 0.0) {
       Fz = 0.0;
    }
 
-   //  Load the right-hand sides of the ODE's
+   // load the right-hand sides of the ODE's
    dq[0] = ds * (Fx / mass);
    dq[1] = ds * vx;
    dq[2] = ds * (Fy / mass);
@@ -218,36 +150,24 @@ void planeRightHandSide(Plane* plane,
    return;
 }
 
-//************************************************************
-//  This method solves for the plane motion using a
-//  4th-order Runge-Kutta solver
-//************************************************************
-void planeRungeKutta4(Plane *plane, double ds) {
-
-  int j;
-  int numEqns;
-  double s;
-  double *q;
-  double *dq1;
-  double *dq2;
-  double *dq3;
-  double *dq4;
-
-  //  Define a convenience variable to make the
-  //  code more readable
-  numEqns = plane->numEqns;
+//-----------------------------------------------------
+// 4th-order Runge-Kutta solver for plane motion
+//-----------------------------------------------------
+void planeRungeKutta4(Plane *plane, double ds)
+{
+  int numEqns{plane->numEqns};
 
   //  Allocate memory for the arrays.
-  q = (double *)std::malloc(numEqns*sizeof(double));
-  dq1 = (double *)std::malloc(numEqns*sizeof(double));
-  dq2 = (double *)std::malloc(numEqns*sizeof(double));
-  dq3 = (double *)std::malloc(numEqns*sizeof(double));
-  dq4 = (double *)std::malloc(numEqns*sizeof(double));
+  double* q = (double *)std::malloc(numEqns*sizeof(double));
+  double* dq1 = (double *)std::malloc(numEqns*sizeof(double));
+  double* dq2 = (double *)std::malloc(numEqns*sizeof(double));
+  double* dq3 = (double *)std::malloc(numEqns*sizeof(double));
+  double* dq4 = (double *)std::malloc(numEqns*sizeof(double));
 
   //  Retrieve the current values of the dependent
   //  and independent variables.
-  s = plane->s;
-  for(j=0; j<numEqns; ++j) {
+  double s{plane->s};
+  for(int j=0; j<numEqns; ++j) {
     q[j] = plane->q[j];
   }     
 
@@ -264,7 +184,7 @@ void planeRungeKutta4(Plane *plane, double ds) {
   //  values in the ODE object arrays.
   plane->s = plane->s + ds;
 
-  for(j=0; j<numEqns; ++j) {
+  for(int j=0; j<numEqns; ++j) {
     q[j] = q[j] + (dq1[j] + 2.0*dq2[j] + 2.0*dq3[j] + dq4[j])/6.0;
     plane->q[j] = q[j];
   }     
