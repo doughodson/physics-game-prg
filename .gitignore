@@ -13,6 +13,9 @@ build/vs2019/
 build/gmake/
 *.[oa]
 
+# ignore java .class files
+*.class
+
 *.exe
 *.lib
 
