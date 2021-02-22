@@ -29,9 +29,9 @@ int main(int argc, char *argv[])
   plane.propDiameter = 1.905;   //  propeller diameter, m
   plane.a = 1.83;               //  propeller efficiency curve fit coefficient
   plane.b = -1.32;              //  propeller efficiency curve fit coefficient
-  plane.bank = 0.0;         
-  plane.alpha = 4.0;        
-  plane.throttle = 1.0;   
+  plane.bank = 0.0;
+  plane.alpha = 4.0;
+  plane.throttle = 1.0;
   plane.flap = "0";             //  flap setting
 
   plane.numEqns = 6;

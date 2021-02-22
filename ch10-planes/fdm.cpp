@@ -76,9 +76,8 @@ void planeRightHandSide(Plane* plane, double* q, double* deltaQ, double ds, doub
       cl = clSlope1 * alpha + cl1;
    }
 
-   //  Include effects of flaps and ground effects.
-   //  Ground effects are present if the plane is
-   //  within 5 meters of the ground.
+   // include effects of flaps and ground effects
+   // -- ground effects are present if the plane is within 5 meters of the ground
    if (!std::strcmp(plane->flap, "20")) {
       cl += 0.25;
    }
@@ -104,10 +103,10 @@ void planeRightHandSide(Plane* plane, double* q, double* deltaQ, double ds, doub
    const double cosW{std::cos(bank)};
    const double sinW{std::sin(bank)};
 
-   double cosP{};   //  climb angle
-   double sinP{};   //  climb angle
-   double cosT{};   //  heading angle
-   double sinT{};   //  heading angle
+   double cosP{};   // climb angle
+   double sinP{};   // climb angle
+   double cosT{};   // heading angle
+   double sinT{};   // heading angle
 
    if (vtotal == 0.0) {
       cosP = 1.0;
@@ -130,7 +129,7 @@ void planeRightHandSide(Plane* plane, double* q, double* deltaQ, double ds, doub
    const double Fy{sinT * cosP * (thrust - drag) + (-cosT * sinW - sinT * sinP * cosW) * lift};
    double Fz{sinP * (thrust - drag) + cosP * cosW * lift};
 
-   // add the gravity force to the z-direction force.
+   // add the gravity force to the z-direction force
    Fz = Fz + mass * G;
 
    // since the plane can't sink into the ground, if the altitude is less than or equal to zero and the z-component
@@ -157,23 +156,23 @@ void planeRungeKutta4(Plane *plane, double ds)
 {
   int numEqns{plane->numEqns};
 
-  //  Allocate memory for the arrays.
+  // allocate memory for the arrays
   double* q = (double *)std::malloc(numEqns*sizeof(double));
   double* dq1 = (double *)std::malloc(numEqns*sizeof(double));
   double* dq2 = (double *)std::malloc(numEqns*sizeof(double));
   double* dq3 = (double *)std::malloc(numEqns*sizeof(double));
   double* dq4 = (double *)std::malloc(numEqns*sizeof(double));
 
-  //  Retrieve the current values of the dependent
-  //  and independent variables.
+  // retrieve the current values of the dependent
+  // and independent variables
   double s{plane->s};
   for(int j=0; j<numEqns; ++j) {
     q[j] = plane->q[j];
   }     
 
-  // Compute the four Runge-Kutta steps, The return 
+  // compute the four Runge-Kutta steps, then return 
   // value of planeRightHandSide method is an array
-  // of delta-q values for each of the four steps.
+  // of delta-q values for each of the four steps
   planeRightHandSide(plane, q, q,   ds, 0.0, dq1);
   planeRightHandSide(plane, q, dq1, ds, 0.5, dq2);
   planeRightHandSide(plane, q, dq2, ds, 0.5, dq3);
@@ -181,15 +180,15 @@ void planeRungeKutta4(Plane *plane, double ds)
 
   //  Update the dependent and independent variable values
   //  at the new dependent variable location and store the
-  //  values in the ODE object arrays.
+  //  values in the ODE object arrays
   plane->s = plane->s + ds;
 
   for(int j=0; j<numEqns; ++j) {
     q[j] = q[j] + (dq1[j] + 2.0*dq2[j] + 2.0*dq3[j] + dq4[j])/6.0;
     plane->q[j] = q[j];
-  }     
+  }
 
-  //  Free up memory
+  // free memory
   std::free(q);
   std::free(dq1);
   std::free(dq2);
