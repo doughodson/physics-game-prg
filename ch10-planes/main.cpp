@@ -1,7 +1,7 @@
 #include <cmath>
 #include <cstdio>
 
-#include "Plane.hpp"
+#include "plane.hpp"
 
 void planeRungeKutta4(Plane* plane, const double dt);
 
@@ -44,9 +44,8 @@ int main(int argc, char *argv[])
   plane.q[4] = 0.0;   //  vz 
   plane.q[5] = 0.0;   //  z  
 
-  const double dt{0.5};
-
-  // accelerate the plane for 40 seconds
+  // execute simulation for 40 seconds
+  const double dt{ 0.5 };
   while ( plane.time < 40.0 ) {
     planeRungeKutta4(&plane, dt);
 

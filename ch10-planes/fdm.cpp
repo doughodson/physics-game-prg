@@ -4,7 +4,7 @@
 #include <cmath>
 #include <memory>
 
-#include "Plane.hpp"
+#include "plane.hpp"
 
 const double pi{std::acos(-1.0)};
 const double G{-9.81};
