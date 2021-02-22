@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <memory>
 
 #include "Plane.hpp"
 
@@ -156,11 +157,11 @@ void planeRungeKutta4(Plane *plane, const double dt)
   int numEqns{plane->numEqns};
 
   // allocate memory for the arrays
-  double* q = (double *)std::malloc(numEqns*sizeof(double));
-  double* dq1 = (double *)std::malloc(numEqns*sizeof(double));
-  double* dq2 = (double *)std::malloc(numEqns*sizeof(double));
-  double* dq3 = (double *)std::malloc(numEqns*sizeof(double));
-  double* dq4 = (double *)std::malloc(numEqns*sizeof(double));
+  auto q = new double[numEqns];
+  auto dq1 = new double[numEqns];
+  auto dq2 = new double[numEqns];
+  auto dq3 = new double[numEqns];
+  auto dq4 = new double[numEqns];
 
   // retrieve the current values of the dependent
   // and independent variables
@@ -176,9 +177,9 @@ void planeRungeKutta4(Plane *plane, const double dt)
   planeRightHandSide(plane, q, dq2, dt, 0.5, dq3);
   planeRightHandSide(plane, q, dq3, dt, 1.0, dq4);
 
-  //  Update the dependent and independent variable values
-  //  at the new dependent variable location and store the
-  //  values in the ODE object arrays
+  // update the dependent and independent variable values
+  // at the new dependent variable location and store the
+  // values in the ODE object arrays
   plane->time += dt;
 
   for(int j=0; j<numEqns; ++j) {
@@ -187,11 +188,11 @@ void planeRungeKutta4(Plane *plane, const double dt)
   }
 
   // free memory
-  std::free(q);
-  std::free(dq1);
-  std::free(dq2);
-  std::free(dq3);
-  std::free(dq4);
+  delete[] q;
+  delete[] dq1;
+  delete[] dq2;
+  delete[] dq3;
+  delete[] dq4;
 
   return;
 }
