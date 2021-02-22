@@ -165,7 +165,6 @@ void planeRungeKutta4(Plane *plane, double ds)
 
   // retrieve the current values of the dependent
   // and independent variables
-  double s{plane->s};
   for(int j=0; j<numEqns; ++j) {
     q[j] = plane->q[j];
   }     
