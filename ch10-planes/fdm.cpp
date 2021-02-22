@@ -102,7 +102,6 @@ void planeRightHandSide(Plane* plane, double* q, double* deltaQ, double ds, doub
    // compute the sine and cosines of the climb angle, bank angle, and heading angle
    const double cosW{std::cos(bank)};
    const double sinW{std::sin(bank)};
-
    double cosP{};   // climb angle
    double sinP{};   // climb angle
    double cosT{};   // heading angle

@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     const double z{plane.q[5]};
     const double v{std::sqrt(plane.q[0]*plane.q[0] + plane.q[2]*plane.q[2] + plane.q[4]*plane.q[4])};
 
-    std::printf("time=%lf  x=%lf  altitude=%lf  airspeed=%lf\n", time, x, z, v);
+    std::printf("time=%lf x=%lf  altitude=%lf  airspeed=%lf\n", time, x, z, v);
   }
 
   return 0;
