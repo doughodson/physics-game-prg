@@ -144,8 +144,7 @@ public class FlightSimulator extends JFrame implements ActionListener
     });
 
     //  This JSlider controls the engine throttle
-    throttleSlider = new JSlider(JSlider.HORIZONTAL,
-                           0, 100, 0);
+    throttleSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
     throttleSlider.setMajorTickSpacing(20);
     throttleSlider.setMinorTickSpacing(5);
     throttleSlider.setPaintTicks(true);
