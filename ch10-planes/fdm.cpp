@@ -12,11 +12,12 @@ const double G{-9.81};
 //-----------------------------------------------------
 // loads the right-hand sides for the plane ODEs
 //-----------------------------------------------------
-void planeRightHandSide(Plane* plane, 
-                        const double* const q, const double* const deltaQ,
-                        const double dt, const double qScale,
-                        double* dq)
+void plane_rhs(const Plane* plane, 
+               const double* const q, const double* const deltaQ,
+               const double dt, const double qScale,
+               double* dq)
 {
+    // convenience variables
     const double alpha{plane->alpha};
     const double throttle{plane->throttle};
     const double wingArea{plane->wingArea};
@@ -114,71 +115,72 @@ void planeRightHandSide(Plane* plane,
     const double Fy{sinT * cosP * (thrust - drag) + (-cosT * sinW - sinT * sinP * cosW) * lift};
     double Fz{sinP * (thrust - drag) + cosP * cosW * lift};
 
-   // add the gravity force to the z-direction force
-   Fz += mass * G;
+    // add the gravity force to the z-direction force
+    Fz += mass * G;
 
-   // since the plane can't sink into the ground, if the altitude is less than or equal to zero and the z-component
-   // of force is less than zero, set the z-force to be zero
-   if (z <= 0.0 && Fz <= 0.0) {
-      Fz = 0.0;
-   }
+    // since the plane can't sink into the ground, if the altitude is less than or equal to zero and the z-component
+    // of force is less than zero, set the z-force to be zero
+    if (z <= 0.0 && Fz <= 0.0) {
+        Fz = 0.0;
+    }
 
-   // load the right-hand sides of the ODE's
-   dq[0] = dt * (Fx / mass);
-   dq[1] = dt * vx;
-   dq[2] = dt * (Fy / mass);
-   dq[3] = dt * vy;
-   dq[4] = dt * (Fz / mass);
-   dq[5] = dt * vz;
+    // load the right-hand sides of the ODE's
+    dq[0] = dt * (Fx / mass);
+    dq[1] = dt * vx;
+    dq[2] = dt * (Fy / mass);
+    dq[3] = dt * vy;
+    dq[4] = dt * (Fz / mass);
+    dq[5] = dt * vz;
 
-   return;
+    return;
 }
 
 //-----------------------------------------------------
 // 4th-order Runge-Kutta solver for plane motion
 //-----------------------------------------------------
-void planeRungeKutta4(Plane *plane, const double dt)
+void eom(Plane *plane, const double dt)
 {
-  int numEqns{plane->numEqns};
+    int numEqns{plane->numEqns};
 
-  // allocate memory for the arrays
-  auto q = new double[numEqns];
-  auto dq1 = new double[numEqns];
-  auto dq2 = new double[numEqns];
-  auto dq3 = new double[numEqns];
-  auto dq4 = new double[numEqns];
+    // allocate memory for the arrays
+    auto q = new double[numEqns];
+    auto dq1 = new double[numEqns];
+    auto dq2 = new double[numEqns];
+    auto dq3 = new double[numEqns];
+    auto dq4 = new double[numEqns];
 
-  // retrieve the current values of the dependent
-  // and independent variables
-  for (int j=0; j<numEqns; ++j) {
-    q[j] = plane->q[j];
-  }
+    // retrieve the current values of the dependent
+    // and independent variables
+    for (int j=0; j<numEqns; ++j) {
+        q[j] = plane->q[j];
+    }
 
-  // compute the four Runge-Kutta steps, then return 
-  // value of planeRightHandSide method is an array
-  // of delta-q values for each of the four steps
-  planeRightHandSide(plane, q, q,   dt, 0.0, dq1);
-  planeRightHandSide(plane, q, dq1, dt, 0.5, dq2);
-  planeRightHandSide(plane, q, dq2, dt, 0.5, dq3);
-  planeRightHandSide(plane, q, dq3, dt, 1.0, dq4);
+    // compute the four Runge-Kutta steps, then return 
+    // value of planeRightHandSide method is an array
+    // of delta-q values for each of the four steps
+    plane_rhs(plane, q, q,   dt, 0.0, dq1);
+    plane_rhs(plane, q, dq1, dt, 0.5, dq2);
+    plane_rhs(plane, q, dq2, dt, 0.5, dq3);
+    plane_rhs(plane, q, dq3, dt, 1.0, dq4);
 
-  // update the dependent and independent variable values
-  // at the new dependent variable location and store the
-  // values in the ODE object arrays
-  plane->time += dt;
+    // update simulation time
+    plane->time += dt;
 
-  for(int j=0; j<numEqns; ++j) {
-    q[j] = q[j] + (dq1[j] + 2.0*dq2[j] + 2.0*dq3[j] + dq4[j])/6.0;
-    plane->q[j] = q[j];
-  }
+    // update the dependent and independent variable values
+    // at the new dependent variable location and store the
+    // values in the ODE object arrays
+    for(int j=0; j<numEqns; ++j) {
+        q[j] = q[j] + (dq1[j] + 2.0*dq2[j] + 2.0*dq3[j] + dq4[j])/6.0;
+        plane->q[j] = q[j];
+    }
 
-  // free memory
-  delete[] q;
-  delete[] dq1;
-  delete[] dq2;
-  delete[] dq3;
-  delete[] dq4;
+    // free memory
+    delete[] q;
+    delete[] dq1;
+    delete[] dq2;
+    delete[] dq3;
+    delete[] dq4;
 
-  return;
+    return;
 }
  

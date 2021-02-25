@@ -3,7 +3,7 @@
 
 #include "plane.hpp"
 
-void planeRungeKutta4(Plane* plane, const double dt);
+void eom(Plane* plane, const double dt);
 
 //-----------------------------------------------------
 // initializes a plane and solves for the plane motion using the Runge-Kutta solver
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   // execute simulation for 40 seconds
   const double dt{ 0.5 };
   while ( plane.time < 40.0 ) {
-    planeRungeKutta4(&plane, dt);
+    eom(&plane, dt);
 
     const double x{plane.q[1]};
     const double z{plane.q[5]};
