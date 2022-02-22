@@ -11,10 +11,15 @@ const double G{-9.81};
 
 struct Forces
 {
+    // forces in body coordinates
     double thrust{};
     double drag{};
     double lift{};
     double gravity{};
+    // forces in world coordinates
+    double x{};
+    double y{};
+    double z{};
 };
 
 void calculate_forces(const Plane& plane, const double altitude, const double velocity, Forces* forces)
