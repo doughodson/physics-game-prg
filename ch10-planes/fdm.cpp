@@ -146,7 +146,7 @@ void plane_rhs(const Plane& plane,
 //-----------------------------------------------------
 void eom_rk4(const Plane& plane, Rk4Data* rk4_data, const double dt)
 {
-    int numEqns{rk4_data->numEqns};
+    const int numEqns{rk4_data->numEqns};
 
     // allocate memory for the arrays
     auto q = new double[numEqns];
