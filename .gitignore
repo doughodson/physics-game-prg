@@ -10,6 +10,7 @@
 .vs/
 .vscode/
 build/vs2019/
+build/vs2022/
 build/gmake/
 *.[oa]
 
