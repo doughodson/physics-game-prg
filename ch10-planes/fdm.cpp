@@ -93,8 +93,11 @@ void plane_rhs(const Plane& plane,
     const double vh{std::sqrt(vx * vx + vy * vy)};
     const double velocity{std::sqrt(vx * vx + vy * vy + vz * vz)};
 
-    double thrust{}, lift{}, drag{}, gravity{};
-    std::tie(thrust, lift, drag, gravity) = calculate_forces(plane, z, velocity);
+    const std::tuple<double, double, double, double> forces = calculate_forces(plane, z, velocity);
+    const double thrust{std::get<0>(forces)};
+    const double lift{std::get<1>(forces)};
+    const double drag{std::get<2>(forces)};
+    const double gravity{std::get<3>(forces)};
 
     // convert bank angle from degrees to radians
     // angle of attack is not converted because the
