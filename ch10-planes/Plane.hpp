@@ -25,11 +25,6 @@ struct Plane
     double a{};            //  propeller efficiency coefficient
     double b{};            //  propeller efficiency coefficient
 
-    // simulation data
-    double time{};         // time
-    int numEqns{};
-    double q[6];
-
     double bank{};
     double alpha{};        //  angle of attack
     double throttle{};

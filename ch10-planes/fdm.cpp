@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "Plane.hpp"
+#include "Rk4Data.hpp"
 
 const double pi{std::acos(-1.0)};
 const double G{-9.81};
@@ -36,8 +37,8 @@ void calculate_forces(const Plane& plane, const double altitude, const double ve
 
     // compute thrust
     const double advanceRatio{velocity / (plane.engineRps * plane.propDiameter)};
-    const double a{ plane.a };
-    const double b{ plane.b };
+    const double a{plane.a};
+    const double b{plane.b};
     const double thrust{ plane.throttle * factor * plane.enginePower * (a + b * advanceRatio * advanceRatio) / (plane.engineRps * plane.propDiameter) };
 
     // compute lift coefficient - the Cl curve is modeled using two straight lines
@@ -84,7 +85,7 @@ void calculate_forces(const Plane& plane, const double altitude, const double ve
 //-----------------------------------------------------
 // loads the right-hand sides for the plane ODEs
 //-----------------------------------------------------
-void plane_rhs(const Plane& plane, 
+void plane_rhs(const Plane& plane,
                const double* const q, const double* const deltaQ,
                const double dt, const double qScale,
                double* dq)
@@ -154,9 +155,9 @@ void plane_rhs(const Plane& plane,
 //-----------------------------------------------------
 // 4th-order Runge-Kutta solver for plane motion
 //-----------------------------------------------------
-void eom(Plane *plane, const double dt)
+void eom(const Plane& plane, Rk4Data* rk4_data, const double dt)
 {
-    int numEqns{plane->numEqns};
+    int numEqns{rk4_data->numEqns};
 
     // allocate memory for the arrays
     auto q = new double[numEqns];
@@ -168,26 +169,23 @@ void eom(Plane *plane, const double dt)
     // retrieve the current values of the dependent
     // and independent variables
     for (int j=0; j<numEqns; ++j) {
-        q[j] = plane->q[j];
+        q[j] = rk4_data->q[j];
     }
 
     // compute the four Runge-Kutta steps, then return 
     // value of planeRightHandSide method is an array
     // of delta-q values for each of the four steps
-    plane_rhs(*plane, q, q,   dt, 0.0, dq1);
-    plane_rhs(*plane, q, dq1, dt, 0.5, dq2);
-    plane_rhs(*plane, q, dq2, dt, 0.5, dq3);
-    plane_rhs(*plane, q, dq3, dt, 1.0, dq4);
-
-    // update simulation time
-    plane->time += dt;
+    plane_rhs(plane, q, q,   dt, 0.0, dq1);
+    plane_rhs(plane, q, dq1, dt, 0.5, dq2);
+    plane_rhs(plane, q, dq2, dt, 0.5, dq3);
+    plane_rhs(plane, q, dq3, dt, 1.0, dq4);
 
     // update the dependent and independent variable values
     // at the new dependent variable location and store the
     // values in the ODE object arrays
     for (int j=0; j<numEqns; ++j) {
         q[j] = q[j] + (dq1[j] + 2.0*dq2[j] + 2.0*dq3[j] + dq4[j])/6.0;
-        plane->q[j] = q[j];
+        rk4_data->q[j] = q[j];
     }
 
     // free memory

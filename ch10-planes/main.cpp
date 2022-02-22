@@ -1,18 +1,18 @@
 #include <cmath>
 #include <cstdio>
 
-#include "plane.hpp"
+#include "Plane.hpp"
+#include "Rk4Data.hpp"
 
-void eom(Plane* plane, const double dt);
+void eom(const Plane&, Rk4Data*, const double dt);
 
 //-----------------------------------------------------
 // initializes a plane and solves for the plane motion using the Runge-Kutta solver
 //-----------------------------------------------------
 int main(int argc, char *argv[])
 {
-  Plane plane;
-
   // Cessna 172 characteristics
+  Plane plane;
   plane.wingArea = 16.2;        // wing wetted area, m^2
   plane.wingSpan = 10.9;        // wing span, m
   plane.tailArea = 2.0;         // tail wetted area, m^2
@@ -35,25 +35,29 @@ int main(int argc, char *argv[])
   plane.throttle = 1.0;
   plane.flap = "0";             //  flap setting
 
-  plane.numEqns = 6;
-  plane.time = 0.0;   //  time 
-  plane.q[0] = 0.0;   //  vx 
-  plane.q[1] = 0.0;   //  x  
-  plane.q[2] = 0.0;   //  vy 
-  plane.q[3] = 0.0;   //  y  
-  plane.q[4] = 0.0;   //  vz 
-  plane.q[5] = 0.0;   //  z  
+  Rk4Data rk4_data;
+  rk4_data.numEqns = 6;
+  rk4_data.q[0] = 0.0;   //  vx 
+  rk4_data.q[1] = 0.0;   //  x  
+  rk4_data.q[2] = 0.0;   //  vy 
+  rk4_data.q[3] = 0.0;   //  y  
+  rk4_data.q[4] = 0.0;   //  vz 
+  rk4_data.q[5] = 0.0;   //  z  
 
   // execute simulation for 40 seconds
   const double dt{ 0.5 };
-  while ( plane.time < 40.0 ) {
-    eom(&plane, dt);
+  double time{};
+  while (time < 40.0) {
+    eom(plane, &rk4_data, dt);
 
-    const double x{plane.q[1]};
-    const double z{plane.q[5]};
-    const double v{std::sqrt(plane.q[0]*plane.q[0] + plane.q[2]*plane.q[2] + plane.q[4]*plane.q[4])};
+    const double x{rk4_data.q[1]};
+    const double z{rk4_data.q[5]};
+    const double v{std::sqrt(rk4_data.q[0]*rk4_data.q[0] +
+                             rk4_data.q[2]*rk4_data.q[2] +
+                             rk4_data.q[4]*rk4_data.q[4])};
 
-    std::printf("time=%lf x=%lf  altitude=%lf  airspeed=%lf\n", plane.time, x, z, v);
+    std::printf("time=%lf x=%lf  altitude=%lf  airspeed=%lf\n", time, x, z, v);
+    time += dt; // update simulation time
   }
 
   return 0;
