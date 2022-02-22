@@ -58,7 +58,7 @@ void calculate_forces(const Plane& plane, const double altitude, const double ve
 
     // compute lift
     const double wingArea{plane.wingArea};
-    const double lift{0.5 * cl * density * velocity * velocity * wingArea};
+    const double lift{0.5 * cl * density * velocity * velocity * wingArea };
 
     // compute drag coefficient
     const double wingSpan{plane.wingSpan};
@@ -155,7 +155,7 @@ void plane_rhs(const Plane& plane,
 //-----------------------------------------------------
 // 4th-order Runge-Kutta solver for plane motion
 //-----------------------------------------------------
-void eom(const Plane& plane, Rk4Data* rk4_data, const double dt)
+void eom_rk4(const Plane& plane, Rk4Data* rk4_data, const double dt)
 {
     int numEqns{rk4_data->numEqns};
 
@@ -198,3 +198,45 @@ void eom(const Plane& plane, Rk4Data* rk4_data, const double dt)
     return;
 }
  
+void eom(const Plane& plane, Rk4Data* rk4_data, const double dt)
+{
+    int numEqns{ rk4_data->numEqns };
+
+    // allocate memory for the arrays
+    auto q = new double[numEqns];
+    auto dq1 = new double[numEqns];
+    auto dq2 = new double[numEqns];
+    auto dq3 = new double[numEqns];
+    auto dq4 = new double[numEqns];
+
+    // retrieve the current values of the dependent
+    // and independent variables
+    for (int j = 0; j < numEqns; ++j) {
+        q[j] = rk4_data->q[j];
+    }
+
+    // compute the four Runge-Kutta steps, then return 
+    // value of planeRightHandSide method is an array
+    // of delta-q values for each of the four steps
+    plane_rhs(plane, q, q, dt, 0.0, dq1);
+    plane_rhs(plane, q, dq1, dt, 0.5, dq2);
+    plane_rhs(plane, q, dq2, dt, 0.5, dq3);
+    plane_rhs(plane, q, dq3, dt, 1.0, dq4);
+
+    // update the dependent and independent variable values
+    // at the new dependent variable location and store the
+    // values in the ODE object arrays
+    for (int j = 0; j < numEqns; ++j) {
+        q[j] = q[j] + (dq1[j] + 2.0 * dq2[j] + 2.0 * dq3[j] + dq4[j]) / 6.0;
+        rk4_data->q[j] = q[j];
+    }
+
+    // free memory
+    delete[] q;
+    delete[] dq1;
+    delete[] dq2;
+    delete[] dq3;
+    delete[] dq4;
+
+    return;
+}
