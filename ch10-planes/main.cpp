@@ -7,7 +7,6 @@
 void eom_rk4(const Plane&, Rk4Data*, const double dt);
 void eom(const Plane&, Rk4Data*, const double dt);
 
-
 //-----------------------------------------------------
 // initializes a plane and solves for the plane motion using the Runge-Kutta solver
 //-----------------------------------------------------

@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cmath>
 #include <memory>
+#include <tuple>
 
 #include "Plane.hpp"
 #include "Rk4Data.hpp"
@@ -10,20 +11,8 @@
 const double pi{std::acos(-1.0)};
 const double G{-9.81};
 
-struct Forces
-{
-    // forces in body coordinates
-    double thrust{};
-    double drag{};
-    double lift{};
-    double gravity{};
-    // forces in world coordinates
-    double x{};
-    double y{};
-    double z{};
-};
-
-void calculate_forces(const Plane& plane, const double altitude, const double velocity, Forces* forces)
+std::tuple<double, double, double, double>
+calculate_forces(const Plane& plane, const double altitude, const double velocity)
 {
     // air density
     const double temperature{288.15 - 0.0065 * altitude};
@@ -68,18 +57,15 @@ void calculate_forces(const Plane& plane, const double altitude, const double ve
     // compute drag force
     const double drag{0.5 * cd * density * velocity * velocity * wingArea};
 
-    forces->thrust = thrust;
-    forces->lift = lift;
-    forces->drag = drag;
-
     // add the gravity force to the z-direction force
-    forces->gravity = plane.mass * G;
+    double gravity{plane.mass * G};
 
     // since the plane can't sink into the ground, if the altitude is less than or equal to zero and the z-component
     // of force is less than zero, set the z-force to be zero
-    if (altitude <= 0.0 && forces->gravity <= 0.0) {
-        forces->gravity = 0.0;
+    if (altitude <= 0.0 && gravity <= 0.0) {
+        gravity = 0.0;
     }
+    return std::make_tuple(thrust, lift, drag, gravity);
 }
 
 //-----------------------------------------------------
@@ -107,8 +93,8 @@ void plane_rhs(const Plane& plane,
     const double vh{std::sqrt(vx * vx + vy * vy)};
     const double velocity{std::sqrt(vx * vx + vy * vy + vz * vz)};
 
-    Forces forces;
-    calculate_forces(plane, z, velocity, &forces);
+    double thrust{}, lift{}, drag{}, gravity{};
+    std::tie(thrust, lift, drag, gravity) = calculate_forces(plane, z, velocity);
 
     // convert bank angle from degrees to radians
     // angle of attack is not converted because the
@@ -128,9 +114,9 @@ void plane_rhs(const Plane& plane,
     const double sinT{vh == 0.0 ? 0.0: vy/vh};
 
     // convert the thrust, drag, and lift forces into x-, y-, and z-components using the rotation matrix
-    const double Fx{cosT * cosP * (forces.thrust - forces.drag) + (sinT * sinW - cosT * sinP * cosW) * forces.lift};
-    const double Fy{sinT * cosP * (forces.thrust - forces.drag) + (-cosT * sinW - sinT * sinP * cosW) * forces.lift};
-    double Fz{sinP * (forces.thrust - forces.drag) + cosP * cosW * forces.lift};
+    const double Fx{cosT * cosP * (thrust - drag) + (sinT * sinW - cosT * sinP * cosW) * lift};
+    const double Fy{sinT * cosP * (thrust - drag) + (-cosT * sinW - sinT * sinP * cosW) * lift};
+    double Fz{sinP * (thrust - drag) + cosP * cosW * lift};
 
     // add the gravity force to the z-direction force
     Fz += plane.mass * G;
@@ -197,7 +183,7 @@ void eom_rk4(const Plane& plane, Rk4Data* rk4_data, const double dt)
 
     return;
 }
- 
+
 void eom(const Plane& plane, Rk4Data* rk4_data, const double dt)
 {
     int numEqns{ rk4_data->numEqns };
