@@ -3,11 +3,10 @@
 #define __Plane_HPP__
 
 //-----------------------------------------------------
-// Class: Plane
+// Structure: Plane
 //-----------------------------------------------------
-class Plane
+struct Plane
 {
-public:
     // plane properties
     double wingArea{};
     double wingSpan{};
