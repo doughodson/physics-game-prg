@@ -39,7 +39,7 @@ void calculate_forces(const Plane& plane, const double altitude, const double ve
     const double advanceRatio{velocity / (plane.engineRps * plane.propDiameter)};
     const double a{plane.a};
     const double b{plane.b};
-    const double thrust{ plane.throttle * factor * plane.enginePower * (a + b * advanceRatio * advanceRatio) / (plane.engineRps * plane.propDiameter) };
+    const double thrust{plane.throttle * factor * plane.enginePower * (a + b * advanceRatio * advanceRatio) / (plane.engineRps * plane.propDiameter)};
 
     // compute lift coefficient - the Cl curve is modeled using two straight lines
     double cl{plane.alpha < plane.alphaClMax ? plane.clSlope0 * plane.alpha + plane.cl0 : plane.clSlope1 * plane.alpha + plane.cl1 };
@@ -58,12 +58,12 @@ void calculate_forces(const Plane& plane, const double altitude, const double ve
 
     // compute lift
     const double wingArea{plane.wingArea};
-    const double lift{ 0.5 * cl * density * velocity * velocity * wingArea };
+    const double lift{0.5 * cl * density * velocity * velocity * wingArea};
 
     // compute drag coefficient
     const double wingSpan{plane.wingSpan};
     const double aspectRatio{wingSpan * wingSpan / wingArea};
-    const double cd{ plane.cdp + cl * cl / (pi * aspectRatio * plane.eff) };
+    const double cd{plane.cdp + cl * cl / (pi * aspectRatio * plane.eff)};
 
     // compute drag force
     const double drag{0.5 * cd * density * velocity * velocity * wingArea};
