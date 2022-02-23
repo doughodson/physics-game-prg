@@ -67,7 +67,7 @@ workspace("physics-game-prg")
       targetsuffix("_d")
       defines { "WIN32", "_DEBUG" }
 
-   includedirs { "../../include" }
+   includedirs { "../../vendor" }
 
    createConsoleProject("ch04-kinematics")
    createConsoleProject("ch08-cars")
