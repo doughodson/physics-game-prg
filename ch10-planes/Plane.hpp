@@ -28,7 +28,7 @@ struct Plane
     double bank{};
     double alpha{};        //  angle of attack
     double throttle{};
-    char* flap{};          //  flap deflection amount
+    int flap{};            //  flap deflection amount (0, 20, 40)
 };
 
 #endif

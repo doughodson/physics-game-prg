@@ -5,7 +5,6 @@
 #include "Rk4Data.hpp"
 
 void eom_rk4(const Plane&, Rk4Data*, const double dt);
-void eom(const Plane&, Rk4Data*, const double dt);
 
 //-----------------------------------------------------
 // initializes a plane and solves for the plane motion using the Runge-Kutta solver
@@ -34,7 +33,7 @@ int main(int argc, char *argv[])
   plane.bank = 0.0;
   plane.alpha = 4.0;
   plane.throttle = 1.0;
-  plane.flap = "0";             //  flap setting
+  plane.flap = 0;               //  flap setting
 
   Rk4Data rk4_data;
   rk4_data.numEqns = 6;
@@ -49,7 +48,7 @@ int main(int argc, char *argv[])
   const double dt{ 0.5 };
   double time{};
   while (time < 40.0) {
-    eom(plane, &rk4_data, dt);
+    eom_rk4(plane, &rk4_data, dt);
 
     const double x{rk4_data.q[1]};
     const double z{rk4_data.q[5]};

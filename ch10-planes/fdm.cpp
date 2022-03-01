@@ -33,14 +33,14 @@ calculate_forces(const Plane& plane, const double altitude, const double velocit
     // compute lift coefficient - the Cl curve is modeled using two straight lines
     double cl{plane.alpha < plane.alphaClMax ? plane.clSlope0 * plane.alpha + plane.cl0 : plane.clSlope1 * plane.alpha + plane.cl1 };
 
-    // include effects of flaps and ground effects
-    // -- ground effects are present if the plane is within 5 meters of the ground
-    if (!std::strcmp(plane.flap, "20")) {
+    // include the effect of flaps
+    if (plane.flap == 20) {
         cl += 0.25;
     }
-    if (!std::strcmp(plane.flap, "40")) {
+    if (plane.flap == 40) {
         cl += 0.5;
     }
+    // include ground effects if the plane is within 5 meters of the ground
     if (altitude < 5.0) {
         cl += 0.25;
     }
@@ -187,45 +187,3 @@ void eom_rk4(const Plane& plane, Rk4Data* rk4_data, const double dt)
     return;
 }
 
-void eom(const Plane& plane, Rk4Data* rk4_data, const double dt)
-{
-    int numEqns{ rk4_data->numEqns };
-
-    // allocate memory for the arrays
-    auto q = new double[numEqns];
-    auto dq1 = new double[numEqns];
-    auto dq2 = new double[numEqns];
-    auto dq3 = new double[numEqns];
-    auto dq4 = new double[numEqns];
-
-    // retrieve the current values of the dependent
-    // and independent variables
-    for (int j = 0; j < numEqns; ++j) {
-        q[j] = rk4_data->q[j];
-    }
-
-    // compute the four Runge-Kutta steps, then return 
-    // value of planeRightHandSide method is an array
-    // of delta-q values for each of the four steps
-    plane_rhs(plane, q, q, dt, 0.0, dq1);
-    plane_rhs(plane, q, dq1, dt, 0.5, dq2);
-    plane_rhs(plane, q, dq2, dt, 0.5, dq3);
-    plane_rhs(plane, q, dq3, dt, 1.0, dq4);
-
-    // update the dependent and independent variable values
-    // at the new dependent variable location and store the
-    // values in the ODE object arrays
-    for (int j = 0; j < numEqns; ++j) {
-        q[j] = q[j] + (dq1[j] + 2.0 * dq2[j] + 2.0 * dq3[j] + dq4[j]) / 6.0;
-        rk4_data->q[j] = q[j];
-    }
-
-    // free memory
-    delete[] q;
-    delete[] dq1;
-    delete[] dq2;
-    delete[] dq3;
-    delete[] dq4;
-
-    return;
-}
