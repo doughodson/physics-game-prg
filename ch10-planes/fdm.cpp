@@ -5,14 +5,15 @@
 #include <memory>
 #include <tuple>
 
-#include "Plane.hpp"
+#include "Cessna172Properties.hpp"
+#include "CtrlInputs.hpp"
 #include "Rk4Data.hpp"
 
 const double pi{std::acos(-1.0)};
 const double G{-9.81};
 
 std::tuple<double, double, double, double>
-calculate_forces(const Plane& plane, const double altitude, const double velocity)
+calculate_forces(const Cessna172Properties& prop, const CtrlInputs& inputs, const double altitude, const double velocity)
 {
     // air density
     const double temperature{288.15 - 0.0065 * altitude};
@@ -25,19 +26,19 @@ calculate_forces(const Plane& plane, const double altitude, const double velocit
     const double factor{(omega - 0.12) / 0.88};
 
     // compute thrust
-    const double advanceRatio{velocity / (plane.engineRps * plane.propDiameter)};
-    const double a{plane.a};
-    const double b{plane.b};
-    const double thrust{plane.throttle * factor * plane.enginePower * (a + b * advanceRatio * advanceRatio) / (plane.engineRps * plane.propDiameter)};
+    const double advanceRatio{velocity / (prop.engineRps * prop.propDiameter)};
+    const double a{prop.a};
+    const double b{prop.b};
+    const double thrust{inputs.throttle * factor * prop.enginePower * (a + b * advanceRatio * advanceRatio) / (prop.engineRps * prop.propDiameter)};
 
     // compute lift coefficient - the Cl curve is modeled using two straight lines
-    double cl{plane.alpha < plane.alphaClMax ? plane.clSlope0 * plane.alpha + plane.cl0 : plane.clSlope1 * plane.alpha + plane.cl1 };
+    double cl{inputs.alpha < prop.alphaClMax ? prop.clSlope0 * inputs.alpha + prop.cl0 : prop.clSlope1 * inputs.alpha + prop.cl1};
 
     // include the effect of flaps
-    if (plane.flap == 20) {
+    if (inputs.flap == 20) {
         cl += 0.25;
     }
-    if (plane.flap == 40) {
+    if (inputs.flap == 40) {
         cl += 0.5;
     }
     // include ground effects if the plane is within 5 meters of the ground
@@ -46,19 +47,19 @@ calculate_forces(const Plane& plane, const double altitude, const double velocit
     }
 
     // compute lift
-    const double wingArea{plane.wingArea};
-    const double lift{0.5 * cl * density * velocity * velocity * wingArea };
+    const double wingArea{prop.wingArea};
+    const double lift{0.5 * cl * density * velocity * velocity * wingArea};
 
     // compute drag coefficient
-    const double wingSpan{plane.wingSpan};
+    const double wingSpan{prop.wingSpan};
     const double aspectRatio{wingSpan * wingSpan / wingArea};
-    const double cd{plane.cdp + cl * cl / (pi * aspectRatio * plane.eff)};
+    const double cd{prop.cdp + cl * cl / (pi * aspectRatio * prop.eff)};
 
     // compute drag force
     const double drag{0.5 * cd * density * velocity * velocity * wingArea};
 
     // add the gravity force to the z-direction force
-    double gravity{plane.mass * G};
+    double gravity{prop.mass * G};
 
     // since the plane can't sink into the ground, if the altitude is less than or equal to zero and the z-component
     // of force is less than zero, set the z-force to be zero
@@ -71,7 +72,8 @@ calculate_forces(const Plane& plane, const double altitude, const double velocit
 //-----------------------------------------------------
 // loads the right-hand sides for the plane ODEs
 //-----------------------------------------------------
-void plane_rhs(const Plane& plane,
+void plane_rhs(const Cessna172Properties& prop,
+               const CtrlInputs& inputs,
                const double* const q, const double* const deltaQ,
                const double dt, const double qScale,
                double* dq)
@@ -93,7 +95,7 @@ void plane_rhs(const Plane& plane,
     const double vh{std::sqrt(vx * vx + vy * vy)};
     const double velocity{std::sqrt(vx * vx + vy * vy + vz * vz)};
 
-    const std::tuple<double, double, double, double> forces = calculate_forces(plane, z, velocity);
+    const std::tuple<double, double, double, double> forces = calculate_forces(prop, inputs, z, velocity);
     const double thrust{std::get<0>(forces)};
     const double lift{std::get<1>(forces)};
     const double drag{std::get<2>(forces)};
@@ -102,7 +104,7 @@ void plane_rhs(const Plane& plane,
     // convert bank angle from degrees to radians
     // angle of attack is not converted because the
     // Cl-alpha curve is defined in terms of degrees
-    const double bank{plane.bank * pi / 180.0};
+    const double bank{inputs.bank * pi / 180.0};
 
     // define some shorthand convenience variables for use with the rotation matrix
     // compute the sine and cosines of the climb angle, bank angle, and heading angle
@@ -122,7 +124,7 @@ void plane_rhs(const Plane& plane,
     double Fz{sinP * (thrust - drag) + cosP * cosW * lift};
 
     // add the gravity force to the z-direction force
-    Fz += plane.mass * G;
+    Fz += prop.mass * G;
 
     // since the plane can't sink into the ground, if the altitude is less than or equal to zero and the z-component
     // of force is less than zero, set the z-force to be zero
@@ -131,11 +133,11 @@ void plane_rhs(const Plane& plane,
     }
 
     // load the right-hand sides of the ODE's
-    dq[0] = dt * (Fx / plane.mass);
+    dq[0] = dt * (Fx / prop.mass);
     dq[1] = dt * vx;
-    dq[2] = dt * (Fy / plane.mass);
+    dq[2] = dt * (Fy / prop.mass);
     dq[3] = dt * vy;
-    dq[4] = dt * (Fz / plane.mass);
+    dq[4] = dt * (Fz / prop.mass);
     dq[5] = dt * vz;
 
     return;
@@ -144,7 +146,7 @@ void plane_rhs(const Plane& plane,
 //-----------------------------------------------------
 // 4th-order Runge-Kutta solver for plane motion
 //-----------------------------------------------------
-void eom_rk4(const Plane& plane, Rk4Data* rk4_data, const double dt)
+void eom_rk4(const Cessna172Properties& plane, const CtrlInputs& ctrl_inputs, Rk4Data* rk4_data, const double dt)
 {
     const int numEqns{rk4_data->numEqns};
 
@@ -164,10 +166,10 @@ void eom_rk4(const Plane& plane, Rk4Data* rk4_data, const double dt)
     // compute the four Runge-Kutta steps, then return 
     // value of planeRightHandSide method is an array
     // of delta-q values for each of the four steps
-    plane_rhs(plane, q, q,   dt, 0.0, dq1);
-    plane_rhs(plane, q, dq1, dt, 0.5, dq2);
-    plane_rhs(plane, q, dq2, dt, 0.5, dq3);
-    plane_rhs(plane, q, dq3, dt, 1.0, dq4);
+    plane_rhs(plane, ctrl_inputs, q, q,   dt, 0.0, dq1);
+    plane_rhs(plane, ctrl_inputs, q, dq1, dt, 0.5, dq2);
+    plane_rhs(plane, ctrl_inputs, q, dq2, dt, 0.5, dq3);
+    plane_rhs(plane, ctrl_inputs, q, dq3, dt, 1.0, dq4);
 
     // update the dependent and independent variable values
     // at the new dependent variable location and store the

@@ -1,12 +1,13 @@
 
-#ifndef __Cessna172Data_HPP__
-#define __Cessna172Data_HPP__
+#ifndef __Cessna172Properties_HPP__
+#define __Cessna172Properties_HPP__
 
 //-----------------------------------------------------
-// Structure: Cessna172Data
-// Description: Cessna 172 properties/coeficients
+// Structure: Cessna172Properties
+// Description: Cessna 172 coeficients and parameters used
+//              to calculate forces
 //-----------------------------------------------------
-struct Cessna172Data
+struct Cessna172Properties
 {
     // lift coeficients
     double wingArea{16.2};         // wing wetted area, m^2
@@ -14,7 +15,7 @@ struct Cessna172Data
     double tailArea{2.0};          // tail wetted area, m^2
     double clSlope0{0.0889};       // slope of Cl-alpha curve
     double cl0{0.178};             // intercept of post-stall Cl-alpha curve
-    double clSlope1{ -0.1 };       // slope of post-stall Cl-alpha curve
+    double clSlope1{-0.1};         // slope of post-stall Cl-alpha curve
     double cl1{3.2};               // intercept of post-stall Cl-alpha curve
     double alphaClMax{16.0};       // alpha at Cl(max)
     // drag coefficients
@@ -28,14 +29,6 @@ struct Cessna172Data
     double propDiameter{1.905};    // propeller diameter, m
     double a{1.83};                // propeller efficiency curve fit coefficient
     double b{-1.32};               // propeller efficiency curve fit coefficient
-
-    // inputs
-    double bank{};
-    double alpha{4.0};             //  angle of attack
-    double throttle{1.0};
-    int flap{};                    //  flap deflection amount (0, 20, 40)
 };
 
 #endif
-
-

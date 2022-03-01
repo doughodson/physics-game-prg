@@ -7,7 +7,7 @@
 struct Rk4Data
 {
 	int numEqns{};
-	double q[6];    // vx, x, vy, y, vz, z
+	double q[6]{};   // vx, x, vy, y, vz, z
 };
 
 #endif
