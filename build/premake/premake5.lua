@@ -11,9 +11,9 @@ if (_ACTION == nil) then
 end
 
 --
--- set include and library paths
+-- include and library paths
 --
-COMMON_IncPath      = "../../"
+DEPS_IncPath   = "../../deps"
 
 local function createConsoleProject(projectName)
    project (projectName)
@@ -22,7 +22,7 @@ local function createConsoleProject(projectName)
      location("../" .. _ACTION .. "/projects/%{prj.name}")
      targetname(projectName)
      targetdir("../../" .. projectName)
-     includedirs({COMMON_IncPath})
+     includedirs { DEPS_IncPath }
      debugdir("../../" .. projectName)
      files({
         "../../" .. projectName .. "/**.h*",
@@ -66,8 +66,6 @@ workspace("physics-game-prg")
       symbols("On")
       targetsuffix("_d")
       defines { "WIN32", "_DEBUG" }
-
-   includedirs { "../../vendor" }
 
    createConsoleProject("ch04-kinematics")
    createConsoleProject("ch08-cars")
