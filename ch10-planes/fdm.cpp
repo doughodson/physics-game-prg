@@ -159,7 +159,7 @@ void eom_rk4(const Cessna172Properties& plane, const CtrlInputs& ctrl_inputs, Rk
 
     // retrieve the current values of the dependent
     // and independent variables
-    for (int j=0; j<numEqns; ++j) {
+    for (int j{}; j < numEqns; ++j) {
         q[j] = rk4_data->q[j];
     }
 
@@ -174,7 +174,7 @@ void eom_rk4(const Cessna172Properties& plane, const CtrlInputs& ctrl_inputs, Rk
     // update the dependent and independent variable values
     // at the new dependent variable location and store the
     // values in the ODE object arrays
-    for (int j=0; j<numEqns; ++j) {
+    for (int j{}; j < numEqns; ++j) {
         q[j] = q[j] + (dq1[j] + 2.0*dq2[j] + 2.0*dq3[j] + dq4[j])/6.0;
         rk4_data->q[j] = q[j];
     }
