@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   rk4_data.q[5] = 0.0;   //  z  
 
   // execute simulation for 40 seconds
-  const double dt{ 0.5 };
+  const double dt{0.5};
   double time{};
   while (time < 40.0) {
     eom_rk4(prop, inputs, &rk4_data, dt);
