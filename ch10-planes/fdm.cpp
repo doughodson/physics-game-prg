@@ -12,7 +12,7 @@
 const double pi{std::acos(-1.0)};
 const double G{-9.81};
 
-std::tuple<double, double, double, double>
+std::tuple<double, double, double>
 calculate_forces(const Cessna172Properties& prop, const CtrlInputs& inputs, const double altitude, const double velocity)
 {
     // air density
@@ -58,15 +58,7 @@ calculate_forces(const Cessna172Properties& prop, const CtrlInputs& inputs, cons
     // compute drag force
     const double drag{0.5 * cd * density * velocity * velocity * wingArea};
 
-    // add the gravity force to the z-direction force
-    double gravity{prop.mass * G};
-
-    // since the plane can't sink into the ground, if the altitude is less than or equal to zero and the z-component
-    // of force is less than zero, set the z-force to be zero
-    if (altitude <= 0.0 && gravity <= 0.0) {
-        gravity = 0.0;
-    }
-    return std::make_tuple(thrust, lift, drag, gravity);
+    return std::make_tuple(thrust, lift, drag);
 }
 
 //-----------------------------------------------------
@@ -95,11 +87,10 @@ void plane_rhs(const Cessna172Properties& prop,
     const double vh{std::sqrt(vx * vx + vy * vy)};
     const double velocity{std::sqrt(vx * vx + vy * vy + vz * vz)};
 
-    const std::tuple<double, double, double, double> forces = calculate_forces(prop, inputs, z, velocity);
+    const std::tuple<double, double, double> forces = calculate_forces(prop, inputs, z, velocity);
     const double thrust{std::get<0>(forces)};
     const double lift{std::get<1>(forces)};
     const double drag{std::get<2>(forces)};
-    const double gravity{std::get<3>(forces)};
 
     // convert bank angle from degrees to radians
     // angle of attack is not converted because the
